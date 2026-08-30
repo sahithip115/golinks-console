@@ -144,9 +144,12 @@ Services depend on a repository interface and an injected clock, never on a conc
 
 ### Observability
 
-- **Structured logs** (pino): one line per request tagged with `reqId`, plus domain events such as
-  `shortcut registered`, `sign-off recorded`, and `delivery run closed`. Authorization, cookie and
-  forwarded-for headers are redacted.
+- **Structured logs** (pino): one line per request tagged with `reqId`, and domain events written
+  through the request logger — `shortcut registered`, `shortcut switched off`, `delivery run launched`,
+  `sign-off recorded` — carry the same id. The engine's own lifecycle lines (`delivery run closed`,
+  `run halted by change policy`) are tagged with `runId` instead, since a run outlives the request that
+  started it; joining those to a request is on the list below. Authorization, cookie and forwarded-for
+  headers are redacted.
 - **Request ids**: generated per request, or taken from an inbound `x-request-id`, echoed on the
   response header, and included in every error body.
 - **Metrics** at `/metrics`: request counts and durations by route and status, shortcuts registered,
@@ -187,9 +190,10 @@ checked for contrast, and `prefers-reduced-motion` is respected.
 - **In-memory stores instead of a database.** Two commands to run the project with no service to install,
   and the repository interfaces keep the swap small. The cost is that data does not survive a restart and
   the app cannot be scaled horizontally — which is why the persistence work is first on the list below.
-- **Fastify, Zod, pino, prom-client — and nothing else.** Each earns its place: routing and JSON, one
-  place per validation rule, structured logs with request ids, and the metrics format everything speaks.
-  No ORM, no UI framework, no test framework beyond Vitest.
+- **Five runtime dependencies, and nothing else.** Fastify for routing and JSON, `@fastify/static` to
+  serve the console, Zod so each validation rule has one home, pino for structured logs with request ids,
+  and prom-client for the metrics format everything already speaks. No ORM, no UI framework, no test
+  framework beyond Vitest.
 - **Zod at the edge, domain rules in the service.** Schemas cover shape, length and type; whether a
   destination is *forwardable* lives in `destination-rules.ts` where it can be read as security policy
   rather than as validation trivia. Both surface identically to the caller.
@@ -219,8 +223,11 @@ checked for contrast, and `prefers-reduced-motion` is respected.
    periodic re-check that a destination still resolves.
 5. **Move usage recording off the forwarding path.** Buffer hits and flush them, so a forward never waits
    on the analytics write, and add a small retention job.
-6. **Traces to sit beside the logs and metrics.** OpenTelemetry spans through the engine would show a
+6. **Carry the request id into the engine.** Domain events logged from a route already have it; the
+   engine's lifecycle lines are keyed by `runId` only, so a run cannot yet be joined to the request that
+   started it. Passing the request logger down closes that.
+7. **Traces to sit beside the logs and metrics.** OpenTelemetry spans through the engine would show a
    wave's phases side by side, which is exactly what the graph claims to do.
-7. **Browser tests and an axe pass in CI.** The accessibility work is hand-checked; it should be enforced.
-8. **A dedicated audit view.** The trail is rendered inline today; filtering by phase or kind would make
+8. **Browser tests and an axe pass in CI.** The accessibility work is hand-checked; it should be enforced.
+9. **A dedicated audit view.** The trail is rendered inline today; filtering by phase or kind would make
    a long run readable.
