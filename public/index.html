@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GoLinks Console</title>
+  <meta name="description" content="Register internal shortcuts and run the delivery pipeline that ships changes to them." />
+  <link rel="stylesheet" href="/assets/console.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>&#128279;</text></svg>" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">SP</span>
+      <div>
+        <p class="brand-title">GoLinks Console</p>
+        <p class="brand-sub">Sahithi Periketi</p>
+      </div>
+    </div>
+
+    <nav aria-label="Sections">
+      <div class="tabs" role="tablist" id="tabs">
+        <button class="tab" role="tab" type="button" id="tab-shortcuts"
+                aria-selected="true" aria-controls="panel-shortcuts" data-panel="shortcuts">
+          Shortcuts
+        </button>
+        <button class="tab" role="tab" type="button" id="tab-delivery"
+                aria-selected="false" aria-controls="panel-delivery" data-panel="delivery" tabindex="-1">
+          Delivery pipeline
+        </button>
+      </div>
+    </nav>
+
+    <p class="health" id="health">
+      <span class="dot" aria-hidden="true"></span>
+      <span id="health-text">Checking service…</span>
+    </p>
+  </header>
+
+  <main class="page" id="main">
+    <section class="panel" role="tabpanel" id="panel-shortcuts" aria-labelledby="tab-shortcuts">
+      <h1 class="page-title">Shortcut directory</h1>
+
+      <ul class="tallies" id="tallies" aria-label="Directory totals"></ul>
+
+      <div class="columns">
+        <form class="card form" id="create-form" novalidate>
+          <h2 class="card-title">Register a shortcut</h2>
+          <p class="card-hint" id="create-hint">
+            A destination is all that is required. Everything else takes a sensible default.
+          </p>
+
+          <p class="alert" id="create-alert" role="alert" hidden></p>
+
+          <div class="field">
+            <label for="url">Destination URL <span class="req">(required)</span></label>
+            <input id="url" name="url" type="url" inputmode="url" autocomplete="off"
+                   placeholder="https://example.com/runbook" aria-describedby="create-hint" required />
+          </div>
+
+          <div class="field">
+            <label for="alias">Alias <span class="opt">(optional)</span></label>
+            <div class="prefixed">
+              <span class="prefix" aria-hidden="true">/go/</span>
+              <input id="alias" name="alias" type="text" autocomplete="off"
+                     placeholder="auto-generated" aria-describedby="alias-help" />
+            </div>
+            <p class="help" id="alias-help">4–32 characters: letters, digits, hyphen or underscore.</p>
+          </div>
+
+          <div class="field-pair">
+            <div class="field">
+              <label for="owner">Owner</label>
+              <input id="owner" name="owner" type="text" autocomplete="off" placeholder="Platform" />
+            </div>
+            <div class="field">
+              <label for="lifetimeDays">Lifetime (days)</label>
+              <input id="lifetimeDays" name="lifetimeDays" type="number" min="1" max="365" placeholder="30" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="note">Note</label>
+            <input id="note" name="note" type="text" autocomplete="off" placeholder="What this points at" />
+          </div>
+
+          <button class="btn primary" type="submit">Register shortcut</button>
+        </form>
+
+        <div class="card">
+          <div class="card-head">
+            <h2 class="card-title" id="directory-title">Registered shortcuts</h2>
+            <div class="field search-field">
+              <label class="visually-hidden" for="search">Search shortcuts</label>
+              <input id="search" type="search" placeholder="Search code, URL, owner, note"
+                     aria-describedby="directory-count" />
+            </div>
+          </div>
+
+          <p class="count" id="directory-count" role="status" aria-live="polite"></p>
+
+          <div class="table-scroll" tabindex="0" role="region" aria-labelledby="directory-title">
+            <table class="grid">
+              <caption class="visually-hidden">Shortcuts, newest first</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Shortcut</th>
+                  <th scope="col">Destination</th>
+                  <th scope="col">Owner</th>
+                  <th scope="col" class="right">Uses</th>
+                  <th scope="col">State</th>
+                  <th scope="col" class="right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="directory-body"></tbody>
+            </table>
+          </div>
+          <p class="empty" id="directory-empty" hidden>Nothing matches that search.</p>
+        </div>
+      </div>
+
+      <section class="card" id="usage-card" aria-labelledby="usage-title" hidden>
+        <div class="card-head">
+          <h2 class="card-title" id="usage-title">Usage — <span id="usage-code" class="mono"></span></h2>
+          <button class="btn quiet" id="usage-close" type="button">Close usage panel</button>
+        </div>
+        <div id="usage-body"></div>
+      </section>
+    </section>
+
+    <section class="panel" role="tabpanel" id="panel-delivery" aria-labelledby="tab-delivery" hidden>
+      <h1 class="page-title">Delivery pipeline</h1>
+
+      <div class="columns">
+        <form class="card form" id="launch-form" novalidate>
+          <h2 class="card-title">Launch a run</h2>
+          <p class="card-hint" id="launch-hint">
+            The plan is a graph: design and threat review run together, checks and documentation fan out
+            from build, and rollout waits for a named sign-off.
+          </p>
+
+          <p class="alert" id="launch-alert" role="alert" hidden></p>
+
+          <div class="field">
+            <label for="scenario">Scenario</label>
+            <select id="scenario" aria-describedby="launch-hint"></select>
+          </div>
+
+          <div class="field">
+            <label for="ask">What is being asked for</label>
+            <textarea id="ask" rows="4" required></textarea>
+          </div>
+
+          <div class="field">
+            <label for="break-phase">Break a phase on purpose <span class="opt">(optional)</span></label>
+            <select id="break-phase" aria-describedby="break-help"></select>
+            <p class="help" id="break-help">Shows the retry, then the degraded fallback.</p>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn primary" type="submit">Run the plan</button>
+            <button class="btn quiet" id="policy-demo" type="button">Try a blocked ask</button>
+          </div>
+        </form>
+
+        <div class="card">
+          <div class="card-head">
+            <h2 class="card-title">Current run</h2>
+            <p class="chip" id="run-state" role="status" aria-live="polite">No run yet</p>
+          </div>
+
+          <dl class="run-facts" id="run-facts"></dl>
+
+          <h3 class="section-title" id="graph-title">Plan</h3>
+          <div class="graph" id="graph" aria-labelledby="graph-title">
+            <p class="empty">Launch a run to see the plan.</p>
+          </div>
+
+          <section class="signoff" id="signoff" aria-labelledby="signoff-title" hidden>
+            <h3 id="signoff-title">Sign-off required</h3>
+            <p class="alert" id="signoff-alert" role="alert" hidden></p>
+            <div class="field">
+              <label for="reviewer">Reviewer name</label>
+              <input id="reviewer" type="text" autocomplete="name" placeholder="Your name" />
+            </div>
+            <div class="field">
+              <label for="signoff-comment">Comment <span class="opt">(optional)</span></label>
+              <input id="signoff-comment" type="text" placeholder="What you checked" />
+            </div>
+            <div class="btn-row">
+              <button class="btn primary" id="approve" type="button">Approve rollout</button>
+              <button class="btn danger" id="reject" type="button">Reject and roll back</button>
+            </div>
+          </section>
+
+          <h3 class="section-title" id="artifacts-title">Artifacts</h3>
+          <ul class="files" id="artifacts" aria-labelledby="artifacts-title"></ul>
+
+          <h3 class="section-title" id="trail-title">Audit trail</h3>
+          <ol class="trail" id="trail" aria-labelledby="trail-title"></ol>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
+  <script type="module" src="/assets/console.js"></script>
+</body>
+</html>

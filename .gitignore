@@ -1,0 +1,10 @@
+node_modules/
+dist/
+# Compiled from src/ui by `npm run build`
+public/assets/*.js
+public/assets/*.js.map
+.DS_Store
+*.log
+.env
+*.pem
+*.key
