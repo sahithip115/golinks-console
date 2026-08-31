@@ -31,6 +31,18 @@ export function clockTime(iso: string): string {
   return new Date(iso).toLocaleTimeString([], { hour12: false });
 }
 
+export function dateTime(iso: string): string {
+  return new Date(iso).toLocaleString([], {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
+}
+
 export function relative(iso: string): string {
   const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60_000);
   if (Math.abs(minutes) < 1) return 'just now';

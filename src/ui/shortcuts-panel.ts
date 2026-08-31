@@ -1,6 +1,6 @@
 import { ApiError, api } from './api.ts';
 import type { ShortcutView, UsageReport } from './api.ts';
-import { clear, clockTime, el, make, relative, showAlert, tally, toast } from './dom.ts';
+import { clear, dateTime, el, make, relative, showAlert, tally, toast } from './dom.ts';
 
 const SEARCH_DEBOUNCE_MS = 200;
 let searchTimer = 0;
@@ -122,7 +122,7 @@ async function showUsage(code: string): Promise<void> {
   } else {
     report.recentUses.forEach((use) =>
       recent.append(
-        make('li', { text: `${clockTime(use.happenedAt)} — ${use.sourceHost ?? 'direct'}` }),
+        make('li', { text: `${dateTime(use.happenedAt)} — ${use.sourceHost ?? 'direct'}` }),
       ),
     );
   }

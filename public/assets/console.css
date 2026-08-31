@@ -220,10 +220,21 @@ input[aria-invalid="true"] { border-color: var(--bad); }
   font-size: 12.5px;
 }
 
+.directory-card .table-scroll {
+  max-height: 360px;
+  min-height: 360px;
+  overflow: auto;
+  scrollbar-color: #3a4653 #11171f;
+}
+
 .table-scroll { overflow-x: auto; }
 .grid { width: 100%; border-collapse: collapse; }
 .grid th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   padding: 8px 10px;
+  background: var(--card);
   text-align: left;
   white-space: nowrap;
   font: 600 11.5px var(--sans);
