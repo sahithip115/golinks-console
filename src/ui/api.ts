@@ -29,35 +29,6 @@ export interface UsageReport {
   recentUses: Array<{ happenedAt: string; sourceHost: string | null }>;
 }
 
-export interface RunNode {
-  phase: string;
-  state: string;
-  tries: number;
-  tryBudget: number;
-  waitsFor: string[];
-  summary: string | null;
-  failure: string | null;
-}
-
-export interface RunView {
-  id: string;
-  scenario: string;
-  state: string;
-  revision: number;
-  retries: number;
-  degrades: number;
-  compensations: number;
-  durationMs: number | null;
-  nodes: RunNode[];
-  audit: Array<{ kind: string; phase: string | null; note: string; loggedAt: string }>;
-  artifacts: Array<{ id: string; phase: string; path: string; digest: string }>;
-}
-
-export interface PipelineMeta {
-  phases: string[];
-  presets: Array<{ scenario: string; label: string; ask: string }>;
-}
-
 export interface HealthResponse {
   status: string;
   uptimeSeconds: number;
@@ -119,9 +90,4 @@ export const api = {
       method: 'PATCH',
       body: json(body),
     }),
-  meta: () => request<PipelineMeta>('/api/v1/deliveries/meta'),
-  launch: (body: Record<string, unknown>) =>
-    request<RunView>('/api/v1/deliveries', { method: 'POST', body: json(body) }),
-  signOff: (runId: string, body: Record<string, unknown>) =>
-    request<RunView>(`/api/v1/deliveries/${runId}/sign-off`, { method: 'POST', body: json(body) }),
 };

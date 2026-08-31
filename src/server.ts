@@ -15,9 +15,6 @@ import { Metrics } from './shared/metrics.ts';
 import { registerShortcutRoutes } from './shortcut/api/routes.ts';
 import { InMemoryShortcutRepository } from './shortcut/repository/shortcut-repository.ts';
 import { ShortcutService } from './shortcut/service/shortcut-service.ts';
-import { registerDeliveryRoutes } from './delivery/api/routes.ts';
-import { InMemoryRunRepository } from './delivery/repository/run-repository.ts';
-import { DeliveryEngine } from './delivery/service/delivery-engine.ts';
 import { seedDemoData } from './seed.ts';
 
 export interface BuildOptions {
@@ -30,7 +27,6 @@ export interface Application {
   app: FastifyInstance;
   config: AppConfig;
   shortcuts: ShortcutService;
-  engine: DeliveryEngine;
   metrics: Metrics;
 }
 
@@ -57,7 +53,6 @@ export async function buildApp(options: BuildOptions = {}): Promise<Application>
   });
 
   const shortcuts = new ShortcutService(new InMemoryShortcutRepository(), clock, config, metrics);
-  const engine = new DeliveryEngine(new InMemoryRunRepository(), clock, logger, metrics);
 
   // Baseline browser protections plus the request id on every response.
   app.addHook('onRequest', (request, reply, done) => {
@@ -94,7 +89,7 @@ export async function buildApp(options: BuildOptions = {}): Promise<Application>
     status: 'ok',
     service: 'golinks-console',
     uptimeSeconds: Math.round(process.uptime()),
-    checks: { shortcutStore: 'ok', deliveryStore: 'ok' },
+    checks: { shortcutStore: 'ok' },
     time: clock.now().toISOString(),
   }));
 
@@ -104,7 +99,6 @@ export async function buildApp(options: BuildOptions = {}): Promise<Application>
   });
 
   await registerShortcutRoutes(app, { shortcuts, redirectPrefix: config.redirectPrefix });
-  await registerDeliveryRoutes(app, { engine, now: () => clock.now() });
 
   await app.register(fastifyStatic, {
     root: join(HERE, '..', 'public'),
@@ -117,5 +111,5 @@ export async function buildApp(options: BuildOptions = {}): Promise<Application>
     seedDemoData(shortcuts, logger);
   }
 
-  return { app, config, shortcuts, engine, metrics };
+  return { app, config, shortcuts, metrics };
 }

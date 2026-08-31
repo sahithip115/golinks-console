@@ -30,7 +30,7 @@ npm run dev
 Tests and type checking:
 
 ```bash
-npm test          # 38 tests across the service, engine, and HTTP surface
+npm test          # 25 tests across the service and HTTP surface
 npm run typecheck # server and browser sources
 ```
 
@@ -122,7 +122,7 @@ src/
   shortcut/              api · domain · repository · service
   ui/                    browser TypeScript, compiled to public/assets
 public/                  index.html, console.css, compiled console modules
-tests/                   service, engine, and HTTP-surface tests
+tests/                   service and HTTP-surface tests
 docs/                    architecture and decisions
 ```
 
@@ -177,7 +177,7 @@ checked for contrast, and `prefers-reduced-motion` is respected.
   destination is *forwardable* lives in `destination-rules.ts` where it can be read as security policy
   rather than as validation trivia. Both surface identically to the caller.
 - **The browser console is TypeScript compiled to plain ES modules**, not a framework app. The UI is one
-  focused page and a table; React would have added a build pipeline and a dependency tree for no benefit here.
+  focused page and a table; React would have added more dependencies for no benefit here.
   It does mean the DOM updates are written by hand.
 - **A soft delete.** `DELETE` switches a shortcut off rather than removing it, so a link already in
   circulation stops working while the record of where it pointed survives for audit.

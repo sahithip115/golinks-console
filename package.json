@@ -2,7 +2,7 @@
   "name": "golinks-console",
   "version": "1.0.0",
   "private": true,
-  "description": "Internal shortcut directory with a governed delivery pipeline",
+  "description": "Internal go-links shortcut directory",
   "author": "Sahithi Periketi",
   "license": "UNLICENSED",
   "type": "module",

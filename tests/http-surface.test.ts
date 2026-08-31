@@ -128,46 +128,6 @@ describe('HTTP surface', () => {
     expect(malformed.body).not.toContain('at Object');
   });
 
-  it('launches a run from a preset and records the sign-off', async () => {
-    const launched = await context.app.inject({
-      method: 'POST',
-      url: '/api/v1/deliveries/presets/NEW_BUILD',
-    });
-    expect(launched.statusCode).toBe(201);
-    expect(launched.json().state).toBe('HELD_FOR_SIGN_OFF');
-    const runId = launched.json().id;
-
-    const tooShort = await context.app.inject({
-      method: 'POST',
-      url: `/api/v1/deliveries/${runId}/sign-off`,
-      payload: { reviewer: 'x', approved: true },
-    });
-    expect(tooShort.statusCode).toBe(400);
-    expect(tooShort.json().fields.reviewer).toBeTruthy();
-
-    const approved = await context.app.inject({
-      method: 'POST',
-      url: `/api/v1/deliveries/${runId}/sign-off`,
-      payload: { reviewer: 'Sahithi Periketi', approved: true, comment: 'looks good' },
-    });
-    expect(approved.statusCode).toBe(200);
-    expect(approved.json().state).toBe('DELIVERED');
-
-    const artifact = approved.json().artifacts[0];
-    const fetched = await context.app.inject({
-      method: 'GET',
-      url: `/api/v1/deliveries/${runId}/artifacts/${artifact.id}`,
-    });
-    expect(fetched.json().body.startsWith('#')).toBe(true);
-  });
-
-  it('validates the run id shape before touching the store', async () => {
-    const response = await context.app.inject({ method: 'GET', url: '/api/v1/deliveries/not-a-uuid' });
-
-    expect(response.statusCode).toBe(400);
-    expect(response.json().code).toBe('rejected_input');
-  });
-
   it('serves the console page and its compiled script', async () => {
     const page = await context.app.inject({ method: 'GET', url: '/' });
     expect(page.statusCode).toBe(200);

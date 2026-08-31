@@ -5,7 +5,7 @@ import type { AppConfig } from '../config.ts';
 
 /**
  * The app logs through Fastify's logger contract, which pino satisfies. Typing
- * it this way keeps the server, the engine, and the routes on one interface.
+ * it this way keeps the server and routes on one interface.
  */
 export type Logger = FastifyBaseLogger;
 
