@@ -47,14 +47,39 @@ describe('HTTP surface', () => {
     expect(directory.json().shortcuts).toHaveLength(1);
     expect(directory.json().tally.total).toBe(1);
 
-    const forwarded = await context.app.inject({ method: 'GET', url: '/go/http-handbook' });
+    const forwarded = await context.app.inject({
+      method: 'GET',
+      url: '/go/http-handbook',
+      headers: { referer: 'http://wiki.example.test/platform' },
+    });
     expect(forwarded.statusCode).toBe(302);
     expect(forwarded.headers.location).toBe('https://example.com/handbook');
     expect(forwarded.headers['cache-control']).toBe('no-store');
     expect(forwarded.headers['x-content-type-options']).toBe('nosniff');
 
     const usage = await context.app.inject({ method: 'GET', url: '/api/v1/shortcuts/http-handbook/usage' });
-    expect(usage.json()).toMatchObject({ totalUses: 1, usesLastDay: 1 });
+    expect(usage.json()).toMatchObject({
+      totalUses: 1,
+      usesLastDay: 1,
+      topSources: [{ host: 'wiki.example.test', uses: 1 }],
+    });
+  });
+
+  it('uses the source query as a referrer fallback when the browser sends no referer', async () => {
+    await register({ url: 'https://example.com/fallback', alias: 'source-fallback' });
+
+    const forwarded = await context.app.inject({
+      method: 'GET',
+      url: '/go/source-fallback?source=http%3A%2F%2Flocalhost%3A3000%2Freferrer-test.html',
+    });
+    expect(forwarded.statusCode).toBe(302);
+
+    const usage = await context.app.inject({ method: 'GET', url: '/api/v1/shortcuts/source-fallback/usage' });
+    expect(usage.json()).toMatchObject({
+      totalUses: 1,
+      topSources: [{ host: 'localhost', uses: 1 }],
+      recentUses: [{ sourceHost: 'localhost' }],
+    });
   });
 
   it('describes a rejected field and echoes the request id', async () => {

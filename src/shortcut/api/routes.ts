@@ -4,6 +4,7 @@ import type { ShortcutService } from '../service/shortcut-service.ts';
 import {
   codeParamSchema,
   directoryQuerySchema,
+  forwardQuerySchema,
   newShortcutSchema,
   shortcutPatchSchema,
 } from './schemas.ts';
@@ -56,10 +57,12 @@ export async function registerShortcutRoutes(
 
   app.get(`${redirectPrefix}/:code`, (request, reply) => {
     const { code } = parse(codeParamSchema, request.params);
+    const { source } = parse(forwardQuerySchema, request.query);
     const destination = shortcuts.forward(code, {
       address: callerAddress(request),
       agent: request.headers['user-agent'],
       referrer: request.headers.referer,
+      source,
     });
     return reply.header('cache-control', 'no-store').redirect(destination, 302);
   });

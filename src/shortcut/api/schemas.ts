@@ -41,5 +41,9 @@ export const codeParamSchema = z.object({
   code: z.string().min(1).max(32),
 });
 
+export const forwardQuerySchema = z.object({
+  source: z.string().max(240, 'Source URL must be 240 characters or fewer').optional(),
+});
+
 export type NewShortcutInput = z.infer<typeof newShortcutSchema>;
 export type ShortcutPatchInput = z.infer<typeof shortcutPatchSchema>;

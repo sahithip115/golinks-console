@@ -23,6 +23,7 @@ export interface ForwardContext {
   address?: string | undefined;
   agent?: string | undefined;
   referrer?: string | undefined;
+  source?: string | undefined;
 }
 
 /** Everything the shortcut half of the product can do, stated once. */
@@ -97,7 +98,7 @@ export class ShortcutService {
       happenedAt: now,
       visitorFingerprint: fingerprint(context.address),
       agentFingerprint: fingerprint(context.agent),
-      sourceHost: referrerHost(context.referrer),
+      sourceHost: referrerHost(context.referrer) ?? referrerHost(context.source),
     });
     this.#metrics.forwards.inc({ outcome: 'forwarded' });
     return shortcut.destination;
